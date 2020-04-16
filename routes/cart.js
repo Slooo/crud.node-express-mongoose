@@ -1,27 +1,54 @@
 const {Router} = require('express')
-const Cart = require('../models/cart')
 const Course = require('../models/course')
 const router = new Router()
 
+function mapCartItems(cart) {
+  return cart.items.map(c => ({
+    // достается из mongo _doc для того чтобы вытащить только нужное
+    ...c.courseId._doc,
+    id: c.courseId.id,
+    count: c.count
+  }))
+}
+
+function computePrice(courses) {
+  return courses.reduce((total, course) => total += course.price * course.count, 0)
+}
+
 router.post('/add', async (req, res) => {
-  const course = await Course.getById(req.body.id)
-  await Cart.add(course)
+  const course = await Course.findById(req.body.id)
+  // user это сущность БД
+  await req.user.addToCart(course)
   res.redirect('/cart')
 })
 
 router.get('/', async (req, res) => {
-  const cart = await Cart.fetch()
+  const user = await req.user
+    .populate('cart.items.courseId')
+    .execPopulate()
+
+  const courses = mapCartItems(user.cart)
+
   res.render('cart', {
     title: 'Cart',
     isCart: true,
-    courses: cart.courses,
-    totalPrice: cart.totalPrice
+    courses,
+    totalPrice: computePrice(courses)
   })
 })
 
 router.delete('/remove/:id', async (req, res) => {
-  const cart = await Cart.remove(req.params.id)
-  res.status(200).json(cart)
+  await req.user.deleteFromCart(req.params.id)
+  const user = await req.user
+    .populate('cart.items.courseId')
+    .execPopulate()
+
+  const courses = mapCartItems(user.cart)
+
+  res.status(200).json({
+    courses,
+    price: computePrice(courses)
+  })
 })
 
 module.exports = router

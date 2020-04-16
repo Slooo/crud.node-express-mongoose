@@ -9,6 +9,7 @@ const homeRoutes = require('./routes/home')
 const addRoutes = require('./routes/add')
 const coursesRoutes = require('./routes/courses')
 const cartRoutes = require('./routes/cart')
+const ordersRoutes = require('./routes/orders')
 const User = require('./models/user')
 
 const app = express()
@@ -26,7 +27,7 @@ app.set('views', 'views') // папки где будут шаблоны
 
 app.use(async (req, res, next) => {
   try {
-    const user = await User.findById('5e96098bc18ab8c91507abdc')
+    const user = await User.findById('5e98c31c9f9d0672ddfaf48d') // hardcode!
     req.user = user
     next()
   } catch (e) {
@@ -40,6 +41,7 @@ app.use('/', homeRoutes)
 app.use('/add', addRoutes)
 app.use('/courses', coursesRoutes)
 app.use('/cart', cartRoutes)
+app.use('/orders', ordersRoutes)
 
 const PORT = process.env.PORT || 3000
 

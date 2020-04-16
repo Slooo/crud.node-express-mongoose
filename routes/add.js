@@ -9,11 +9,12 @@ router.get('/', (req, res) => {
   })
 })
 
-router.post('/', async ({body}, res) => {
+router.post('/', async (req, res) => {
   const course = new Course({
-    title: body.title,
-    price: body.price,
-    img: body.img
+    title: req.body.title,
+    price: req.body.price,
+    img: req.body.img,
+    userId: req.user// req.user._id
   })
 
   try {
