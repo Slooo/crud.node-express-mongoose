@@ -12,20 +12,31 @@
       {{else}}
         <li><a href="/courses">Course</a></li>
       {{/if}}
-      {{#if isAdd}}
-        <li class="active"><a href="/add">Add course</a></li>
+
+      {{#if isAuth}}
+        {{#if isAdd}}
+          <li class="active"><a href="/add">Add course</a></li>
+        {{else}}
+          <li><a href="/add">Add course</a></li>
+        {{/if}}
+        {{#if isCart}}
+          <li class="active"><a href="/cart">Cart</a></li>
+        {{else}}
+          <li><a href="/cart">Cart</a></li>
+        {{/if}}
+        {{#if isOrders}}
+          <li class="active"><a href="/orders">Order</a></li>
+        {{else}}
+          <li><a href="/orders">Orders</a></li>
+        {{/if}}
+
+        <li><a href="/auth/logout">Logout</a></li>
       {{else}}
-        <li><a href="/add">Add course</a></li>
-      {{/if}}
-      {{#if isCart}}
-        <li class="active"><a href="/cart">Cart</a></li>
-      {{else}}
-        <li><a href="/cart">Cart</a></li>
-      {{/if}}
-      {{#if isOrders}}
-        <li class="active"><a href="/orders">Order</a></li>
-      {{else}}
-        <li><a href="/orders">Orders</a></li>
+        {{#if isLogin}}
+          <li class="active"><a href="/orders">Sign in</a></li>
+        {{else}}
+          <li><a href="/auth/login/#signin">Login</a></li>
+        {{/if}}
       {{/if}}
     </ul>
   </div>

@@ -1,5 +1,6 @@
 const {Router} = require('express')
 const Course = require('../models/course')
+const auth = require('../middleware/auth')
 const router = Router()
 
 router.get('/', async (req, res) => {
@@ -14,7 +15,7 @@ router.get('/', async (req, res) => {
   })
 })
 
-router.get('/:id/edit', async (req, res) => {
+router.get('/:id/edit', auth, async (req, res) => {
   if (!req.query.allow) {
     return res.redirect('/')
   }
@@ -27,7 +28,7 @@ router.get('/:id/edit', async (req, res) => {
   })
 })
 
-router.post('/edit', async ({body}, res) => {
+router.post('/edit', auth, async ({body}, res) => {
   // TODO: ругается если url картинки не найден!
   await Course.findByIdAndUpdate(body.id, {
     title: body.title,
@@ -37,7 +38,7 @@ router.post('/edit', async ({body}, res) => {
   res.redirect('/courses')
 })
 
-router.post('/delete', async (req, res) => {
+router.post('/delete', auth, async (req, res) => {
   try {
     await Course.deleteOne({_id: req.body.id})
     res.redirect('/courses')
