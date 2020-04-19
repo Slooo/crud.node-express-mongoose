@@ -16,17 +16,48 @@ router.get('/logout', async (req, res) => {
 })
 
 router.post('/signin', async (req, res) => {
-  const user = await User.findById('5e98c31c9f9d0672ddfaf48d')
-  req.session.user = user
-  req.session.isAuthenticated = true
-  req.session.save(error => {
-    if (error) {
-      throw Error
+  try {
+    const {email, password} = req.body
+    const candidate = await User.findOne({email})
+
+    if (candidate) {
+      const areSame = password === candidate.password
+      if (areSame) {
+        req.session.user = candidate
+        req.session.isAuthenticated = true
+        req.session.save(error => {
+          if (error) {
+            throw Error
+          }
+          res.redirect('/')
+        })
+      } else {
+        res.redirect('/auth/login/#signin')
+      }
+    } else {
+      res.redirect('/auth/login/#signin')
     }
-    res.redirect('/')
-  })
-  res.redirect('/')
+  } catch (e) {
+    console.error(e)
+  }
 })
 
+// Регистрация
+router.post('/signup', async (req, res) => {
+  try {
+    const {remail: email, rpassword: password, confirm, name} = req.body
+    const candidate = await User.findOne({email})
+
+    if (candidate) {
+      res.redirect('/auth/login/#signup')
+    } else {
+      const user = new User({email, name, password, cart: {items: []}})
+      await user.save()
+      res.redirect('/auth/login/#signin')
+    }
+  } catch (e) {
+    console.error(e)
+  }
+})
 
 module.exports = router
