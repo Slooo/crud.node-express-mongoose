@@ -6,7 +6,10 @@ const router = Router()
 router.get('/login', async (req, res) => {
   res.render('auth/login', {
     title: 'Login',
-    isLogin: true
+    isLogin: true,
+    signUpError: req.flash('signUpError'),
+    signInError: req.flash('signInError'),
+    error: req.flash('error')
   })
 })
 
@@ -34,9 +37,11 @@ router.post('/signin', async (req, res) => {
           res.redirect('/')
         })
       } else {
+        req.flash('signInError', 'This password in not coincides')
         res.redirect('/auth/login/#signin')
       }
     } else {
+      req.flash('signInError', 'This user is not found')
       res.redirect('/auth/login/#signin')
     }
   } catch (e) {
@@ -51,6 +56,7 @@ router.post('/signup', async (req, res) => {
     const candidate = await User.findOne({email})
 
     if (candidate) {
+      req.flash('signUpError', 'This user busy')
       res.redirect('/auth/login/#signup')
     } else {
       const password = await bcrypt.hash(rpassword, 10)

@@ -1,6 +1,7 @@
 const express = require('express')
 const path = require('path')
 const csrf = require('csurf')
+const flash = require('connect-flash')
 const exphbs = require('express-handlebars')
 const session = require('express-session')
 const MongoStore = require('connect-mongodb-session')(session)
@@ -46,6 +47,7 @@ app.use(session({
   store
 })) // сессия
 app.use(csrf()) // csrf защита
+app.use(flash()) // flash session
 app.use(varMiddleware)
 app.use(userMiddleware)
 app.use('/', homeRoutes)
