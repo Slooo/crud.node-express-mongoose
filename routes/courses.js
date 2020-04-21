@@ -3,16 +3,25 @@ const Course = require('../models/course')
 const auth = require('../middleware/auth')
 const router = Router()
 
-router.get('/', async (req, res) => {
-  const courses = await Course.find()
-    .populate('userId', 'email name') // с БД юзера по связке достаем
-    .select('price title img') // c БД Courses
+function isOwner(course, req) {
+  return course.userId.toString() === req.user._id.toString()
+}
 
-  res.render('courses', {
-    title: 'Courses',
-    isCourses: true,
-    courses
-  })
+router.get('/', async (req, res) => {
+  try {
+    const courses = await Course.find()
+      .populate('userId', 'email name') // с БД юзера по связке достаем
+      .select('price title img') // c БД Courses
+
+    res.render('courses', {
+      title: 'Courses',
+      isCourses: true,
+      userId: req.user ? req.user._id.toString() : null,
+      courses
+    })
+  } catch (e) {
+    console.error(e)
+  }
 })
 
 router.get('/:id/edit', auth, async (req, res) => {
@@ -20,27 +29,42 @@ router.get('/:id/edit', auth, async (req, res) => {
     return res.redirect('/')
   }
 
-  const course = await Course.findById(req.params.id)
+  try {
+    const course = await Course.findById(req.params.id)
 
-  res.render('edit', {
-    title: `Edit course ${course.title}`,
-    course
-  })
+    if (!isOwner(course, req)) {
+      return res.redirect('/courses')
+    }
+
+    res.render('edit', {
+      title: `Edit course ${course.title}`,
+      course
+    })
+  } catch (e) {
+    console.error(e)
+  }
 })
 
-router.post('/edit', auth, async ({body}, res) => {
-  // TODO: ругается если url картинки не найден!
-  await Course.findByIdAndUpdate(body.id, {
-    title: body.title,
-    price: body.price,
-    url: body.url
-  })
-  res.redirect('/courses')
+router.post('/edit', auth, async (req, res) => {
+  try {
+    const course = await Course.findById(req.body.id)
+    if (!isOwner(course)) {
+      return res.redirect('/courses')
+    }
+    Object.assign(course, req.body)
+    await course.save()
+    res.redirect('/courses')
+  } catch (e) {
+    console.error(e)
+  }
 })
 
 router.post('/delete', auth, async (req, res) => {
   try {
-    await Course.deleteOne({_id: req.body.id})
+    await Course.deleteOne({
+      _id: req.body.id,
+      userId: req.user._id
+    })
     res.redirect('/courses')
   } catch (e) {
     console.error(e)
@@ -48,12 +72,16 @@ router.post('/delete', auth, async (req, res) => {
 })
 
 router.get('/:id', async (req, res) => {
-  const course = await Course.findById(req.params.id)
-  res.render('course', {
-    layout: 'empty',
-    title: `Course ${course.title}`,
-    course
-  })
+  try {
+    const course = await Course.findById(req.params.id)
+    res.render('course', {
+      layout: 'empty',
+      title: `Course ${course.title}`,
+      course
+    })
+  } catch (e) {
+    console.error(e)
+  }
 })
 
 module.exports = router

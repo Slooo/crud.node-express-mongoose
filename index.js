@@ -25,7 +25,8 @@ const app = express()
 const hbs = exphbs.create({
   defaultLayout: 'main',
   extname: 'hbs', // для название engine
-  handlebars: allowInsecurePrototypeAccess(Handlebars)
+  helpers: require('./utils/hbs-helpers'),
+  handlebars: allowInsecurePrototypeAccess(Handlebars),
 })
 
 // конфиг сессии с БД
