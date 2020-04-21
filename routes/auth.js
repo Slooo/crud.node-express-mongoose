@@ -1,12 +1,14 @@
 const {Router} = require('express')
 const bcrypt = require('bcryptjs')
 const crypto = require('crypto')
+const {validationResult} = require('express-validator/check')
 const nodemailer = require('nodemailer')
 const sendgrid = require('nodemailer-sendgrid-transport')
 const User = require('../models/user')
 const keys = require('../keys')
 const reqEmail = require('../emails/registration')
 const resetEmail = require('../emails/reset')
+const {registerValidators} = require('../utils/validators')
 const router = Router()
 
 // Конфиг с sendgrid сервисом
@@ -61,22 +63,23 @@ router.post('/signin', async (req, res) => {
 })
 
 // Регистрация
-router.post('/signup', async (req, res) => {
+router.post('/signup', registerValidators, async (req, res) => {
   try {
-    const {remail: email, rpassword, confirm, name} = req.body
-    const candidate = await User.findOne({email})
+    const {remail: email, rpassword, name} = req.body
 
-    if (candidate) {
-      req.flash('signUpError', 'This user busy')
-      res.redirect('/auth/login/#signup')
-    } else {
-      const password = await bcrypt.hash(rpassword, 10)
-      const user = new User({email, name, password, cart: {items: []}})
-      await user.save()
-      res.redirect('/auth/login/#signin')
-      // отправка на почту
-      await transporter.sendMail(reqEmail(email))
+    const errors = validationResult(req)
+    // если ошибки есть
+    if (!errors.isEmpty()) {
+      req.flash('signUpError', errors.array()[0].msg)
+      return res.status(422).redirect('/auth/login/#signup')
     }
+
+    const password = await bcrypt.hash(rpassword, 10)
+    const user = new User({email, name, password, cart: {items: []}})
+    await user.save()
+    // отправка на почту
+    await transporter.sendMail(reqEmail(email))
+    res.redirect('/auth/login/#signin')
   } catch (e) {
     console.error(e)
   }
@@ -113,7 +116,7 @@ router.post('/reset', (req, res) => {
         res.redirect('/auth/reset')
       }
     })
-  } catch(e) {
+  } catch (e) {
     console.error(e)
   }
 })
