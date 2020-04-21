@@ -15,9 +15,11 @@ const coursesRoutes = require('./routes/courses')
 const cartRoutes = require('./routes/cart')
 const ordersRoutes = require('./routes/orders')
 const authRoutes = require('./routes/auth')
+const profileRoutes = require('./routes/profile')
 const varMiddleware = require('./middleware/variables')
 const userMiddleware = require('./middleware/user')
 const errorMiddleware = require('./middleware/error')
+const fileMiddleware = require('./middleware/file')
 const keys = require('./keys')
 
 const app = express()
@@ -41,13 +43,16 @@ app.set('view engine', 'hbs') // используем в экспрессе эт
 app.set('views', 'views') // папки где будут шаблоны
 
 app.use(express.static(path.join(__dirname, 'public'))) // статично подключаемый каталог
+app.use('/images', express.static(path.join(__dirname, 'images')))
 app.use(express.urlencoded({extended: true})) // парсим из буфера nodejs значения
 app.use(session({
   secret: keys.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   store
-})) // сессия
+}))
+// single - название поля file input
+app.use(fileMiddleware.single('avatar'))
 app.use(csrf()) // csrf защита
 app.use(flash()) // flash session
 app.use(varMiddleware)
@@ -58,6 +63,7 @@ app.use('/courses', coursesRoutes)
 app.use('/cart', cartRoutes)
 app.use('/orders', ordersRoutes)
 app.use('/auth', authRoutes)
+app.use('/profile', profileRoutes)
 
 // 404 page
 app.use(errorMiddleware)
