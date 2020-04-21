@@ -8,7 +8,7 @@ const User = require('../models/user')
 const keys = require('../keys')
 const reqEmail = require('../emails/registration')
 const resetEmail = require('../emails/reset')
-const {registerValidators} = require('../utils/validators')
+const {signUpValidators} = require('../utils/validators')
 const router = Router()
 
 // Конфиг с sendgrid сервисом
@@ -63,7 +63,7 @@ router.post('/signin', async (req, res) => {
 })
 
 // Регистрация
-router.post('/signup', registerValidators, async (req, res) => {
+router.post('/signup', signUpValidators, async (req, res) => {
   try {
     const {remail: email, rpassword, name} = req.body
 
