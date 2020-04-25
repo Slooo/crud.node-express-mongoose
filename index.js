@@ -10,6 +10,7 @@ const {allowInsecurePrototypeAccess} = require('@handlebars/allow-prototype-acce
 
 const mongoose = require('mongoose')
 const helmet = require('helmet')
+const compression = require('compression')
 const homeRoutes = require('./routes/home')
 const addRoutes = require('./routes/add')
 const coursesRoutes = require('./routes/courses')
@@ -57,6 +58,7 @@ app.use(fileMiddleware.single('avatar'))
 app.use(csrf()) // csrf защита
 app.use(flash()) // flash session
 app.use(helmet())
+app.use(compression()) // сжатие статических файлов
 app.use(varMiddleware)
 app.use(userMiddleware)
 app.use('/', homeRoutes)
