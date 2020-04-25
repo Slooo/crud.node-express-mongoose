@@ -9,6 +9,7 @@ const Handlebars = require('handlebars')
 const {allowInsecurePrototypeAccess} = require('@handlebars/allow-prototype-access')
 
 const mongoose = require('mongoose')
+const helmet = require('helmet')
 const homeRoutes = require('./routes/home')
 const addRoutes = require('./routes/add')
 const coursesRoutes = require('./routes/courses')
@@ -55,6 +56,7 @@ app.use(session({
 app.use(fileMiddleware.single('avatar'))
 app.use(csrf()) // csrf защита
 app.use(flash()) // flash session
+app.use(helmet())
 app.use(varMiddleware)
 app.use(userMiddleware)
 app.use('/', homeRoutes)
